@@ -1,3 +1,5 @@
+#liga o servidor FastAPI ---uvicorn main:app --reload
+
 from fastapi import FastAPI
 
 app= FastAPI()
@@ -9,3 +11,4 @@ from order_routes import order_router
 #aqui importamos os rotiadores
 app.include_router(auth_router)
 app.include_router(order_router)
+
