@@ -3,3 +3,6 @@ uvicorn
 sqlalchemy
 alembic
 sqlalchemy-utils
+bcrypt
+passlib   
+dotenv
