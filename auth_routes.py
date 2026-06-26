@@ -3,12 +3,14 @@ from models import user
 from dependecies import pegar_sessao
 
 from schemas import UsuarioSchema # importo meu modleo de parametro para o meu banco de dado
-
+from schemas import LoginSchema
 #parte da criptgrafia
 from main import bcrypt_context
 
 from sqlalchemy.orm import Session
 
+
+#sempre que quiser pegar alguma infromação do banco para verificar e tals, sempre usar o session.query("tabela").filter("tabela".coluna == ....)
 
 auth_router = APIRouter(prefix="/autenticacao", tags=['roteador_autenticacao']) #definindo que todas as rotas aqui vai ficar dentro de auth 
 #ex: dominio/autenticacao/...
@@ -38,3 +40,15 @@ async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao))
         session.add(novo_usuario)
         session.commit() #comita tudo e encera a seção
         return {"mensagem": f"Usuario cadastrado com sucesso meu chapa, bem vindo {user_Schema.nome}"}
+    
+    
+#login ->email e senha - > token JWT
+@auth_router.post("/login")
+async def login(login_schema:LoginSchema,session: Session = Depends(pegar_sessao)):
+    usuario = session.query(user).filter(user.email==login_schema.email).first()
+    
+    if not usuario:
+        raise HTTPException(status_code=400, detail="user ñ encontrado")
+    else:
+        #cria um token para o user
+        

@@ -1,3 +1,6 @@
+#cd c:\users\elito\project_fast_api
+#.venv\Scripts\activate   
+#deactivate
 #liga o servidor FastAPI ---uvicorn main:app --reload
 
 from passlib.context import CryptContext #criptografar as senhas
