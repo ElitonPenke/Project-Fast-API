@@ -1,9 +1,9 @@
 #cd c:\users\elito\project_fast_api
 #.venv\Scripts\activate   
 #deactivate
-#liga o servidor FastAPI ---uvicorn main:app --reload
+#liga o servidor FastAPI uvicorn main:app --reload
 
-from passlib.context import CryptContext #criptografar as senhas
+import bcrypt #criptografar as senhas
 from fastapi import FastAPI
 from dotenv import load_dotenv
 
@@ -12,8 +12,6 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 SECRET_KEY=os.getenv("SECRET_KEY")
-
-bcrypt_context=CryptContext(schemes=["bcrypt"],deprecated="auto")  #o deprecated para usar sempre schemas validos
 
 
 
