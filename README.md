@@ -67,6 +67,6 @@ Esta API fornece funcionalidades básicas para:
 
 - 📖 [Documentação Oficial FastAPI](https://fastapi.tiangolo.com/)
 - 🎬 [Curso Hashtag Programação](https://www.youtube.com/@HashtagProgramacao)
-- 🔐 [Passlib - Hash de Senhas](https://passlib.readthedocs.io/)
+- 🔐 [Bcrypt  - Criptografia de Senhas](https://pypi.org/project/bcrypt/)
 - 🛡️ [JWT para FastAPI](https://fastapi.tiangolo.com/tutorial/security/first-steps/)
 - ✅ [Pydantic - Validação](https://docs.pydantic.dev/)
