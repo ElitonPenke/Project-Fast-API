@@ -11,9 +11,10 @@ from dotenv import load_dotenv
 #parte de criptografia
 import os
 load_dotenv()
+
 SECRET_KEY=os.getenv("SECRET_KEY")
-
-
+ALG=os.getenv("ALG")
+ACCESS_TOKEN_EXPERIUS_MINUTES=int(os.getenv("ACCESS_TOKEN_EXPERIUS_MINUTES"))
 
 app= FastAPI()
 

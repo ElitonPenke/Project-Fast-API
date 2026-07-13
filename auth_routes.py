@@ -5,9 +5,12 @@ from dependecies import pegar_sessao
 from schemas import UsuarioSchema # importo meu modleo de parametro para o meu banco de dado
 from schemas import LoginSchema
 #parte da criptgrafia
-from main import bcrypt
+from main import bcrypt,ACCESS_TOKEN_EXPERIUS_MINUTES,ALG,SECRET_KEY
+
+import jwt
 
 from sqlalchemy.orm import Session
+from datetime import datetime,timedelta,timezone
 
 
 #sempre que quiser pegar alguma infromação do banco para verificar e tals, sempre usar o session.query("tabela").filter("tabela".coluna == ....)
@@ -15,11 +18,28 @@ from sqlalchemy.orm import Session
 auth_router = APIRouter(prefix="/autenticacao", tags=['roteador_autenticacao']) #definindo que todas as rotas aqui vai ficar dentro de auth 
 #ex: dominio/autenticacao/...
 
-
+#jwt (json web token)
 def criar_token(id_usuario):
-    token =f'grentgbieurvunner{id_usuario}'
-    return token
+    data_experacao=datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPERIUS_MINUTES)
+    
+    dic_info={"sub":str(id_usuario),"exp":data_experacao}
+    
+    jwt_cript=jwt.encode(dic_info,SECRET_KEY,ALG)
+    
+    return jwt_cript
 
+def autenticar_usuario(email,senha,session):
+    usuario = session.query(user).filter(user.email==email).first()
+    
+    if not usuario:
+        return False
+    
+    
+    elif not bcrypt.checkpw(senha.encode('utf-8'),usuario.senha.encode('utf-8')):
+        return False
+    
+    
+    return usuario
 
 
 @auth_router.get("/")
@@ -56,10 +76,11 @@ async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao))
 #login ->email e senha - > token JWT
 @auth_router.post("/login")
 async def login(login_schema:LoginSchema,session: Session = Depends(pegar_sessao)):
-    usuario = session.query(user).filter(user.email==login_schema.email).first()
+    
+    usuario = autenticar_usuario(login_schema.email, login_schema.senha,session)
     
     if not usuario:
-        raise HTTPException(status_code=400, detail="user ñ encontrado")
+        raise HTTPException(status_code=400, detail="user ñ encontrado ou senha incorreta")
     else:
         #cria um token para o user
         access_token = criar_token(usuario.id)
