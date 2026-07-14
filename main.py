@@ -6,6 +6,7 @@
 import bcrypt #criptografar as senhas
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from fastapi.security import OAuth2PasswordBearer
 
 
 #parte de criptografia
@@ -15,6 +16,9 @@ load_dotenv()
 SECRET_KEY=os.getenv("SECRET_KEY")
 ALG=os.getenv("ALG")
 ACCESS_TOKEN_EXPERIUS_MINUTES=int(os.getenv("ACCESS_TOKEN_EXPERIUS_MINUTES"))
+
+oauth2_schema=OAuth2PasswordBearer(tokenUrl='autenticacao/login_pelo_form')
+
 
 app= FastAPI()
 

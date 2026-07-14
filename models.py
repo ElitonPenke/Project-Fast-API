@@ -12,10 +12,9 @@ base=declarative_base() #cria a base do banco
 #cria as tabelas do banco
 
 #user
-class user (base):
-    __tablename__="usuarios"
+class user (base):#nome de como eu acesso no meu codigo / nome como vai aparecer no meu banco de dados, sempre trabalhar com   'user'
+    __tablename__="usuarios" # so como vai ficar bonito no meu banco
     
-    #nome de como eu acesso no meu codigo / nome como vai aparecer no meu banco de dados
     
     id=Column("id",Integer,primary_key=True,autoincrement=True)
     nome=Column("nome",String,nullable=False)

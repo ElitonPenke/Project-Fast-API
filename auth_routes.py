@@ -1,6 +1,7 @@
-from fastapi import APIRouter,Depends,HTTPException # roteador que vai fazer o modelo, o caminho para abri e fechar o banco e a questão de erros
+from fastapi import APIRouter,Depends,HTTPException # roteador que vai fazer o modelo, o caminho para abri e fechar o banco e a questão de 
+from fastapi.security import OAuth2PasswordRequestForm # insatncia dos dados do formulario
 from models import user
-from dependecies import pegar_sessao
+from dependecies import pegar_sessao,verificar_token
 
 from schemas import UsuarioSchema # importo meu modleo de parametro para o meu banco de dado
 from schemas import LoginSchema
@@ -19,8 +20,8 @@ auth_router = APIRouter(prefix="/autenticacao", tags=['roteador_autenticacao']) 
 #ex: dominio/autenticacao/...
 
 #jwt (json web token)
-def criar_token(id_usuario):
-    data_experacao=datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPERIUS_MINUTES)
+def criar_token(id_usuario,duracao_token=timedelta(minutes=ACCESS_TOKEN_EXPERIUS_MINUTES)):
+    data_experacao=datetime.now(timezone.utc) + duracao_token
     
     dic_info={"sub":str(id_usuario),"exp":data_experacao}
     
@@ -33,14 +34,9 @@ def autenticar_usuario(email,senha,session):
     
     if not usuario:
         return False
-    
-    
     elif not bcrypt.checkpw(senha.encode('utf-8'),usuario.senha.encode('utf-8')):
         return False
-    
-    
     return usuario
-
 
 @auth_router.get("/")
 async def home():
@@ -55,7 +51,7 @@ async def home():
 @auth_router.post("/criar_conta")                          #o user n passa esse parametro e sim ele puxa do Depends
 async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao)): #passa os parametos e o proprio fastapi vai verificar os tipos da variavel
     
-    print(user_Schema.model_dump())
+    #print(user_Schema.model_dump())
     
     usuario= session.query(user).filter(user.email==user_Schema.email).first() #uma query para ver se tem um user do bd igual ao meu atual tentando inserir
     
@@ -84,6 +80,37 @@ async def login(login_schema:LoginSchema,session: Session = Depends(pegar_sessao
     else:
         #cria um token para o user
         access_token = criar_token(usuario.id)
+        refresh_token=criar_token(usuario.id,duracao_token=timedelta(days=15))
+        return {
+            'access_token':access_token,
+            'refresh_token':refresh_token,
+            'token_type': "Bearer"
+                }
+
+#utilizar o token refresh, verifica a entrada token verificado e atualiza
+@auth_router.get("/refresh")
+async def use_refresh_token(usuario:user = Depends(verificar_token)):
+    
+    access_token=criar_token(user.id)
+    return {
+            'access_token':access_token,
+            'token_type': "Bearer"
+            }
+    
+    
+#--------------------------------------------------------------------------------------
+#para testar na documentação o login por meio no oauth2 
+@auth_router.post("/login_pelo_form")
+async def login_pelo_form(dados_formulario:OAuth2PasswordRequestForm=Depends() ,session: Session = Depends(pegar_sessao)):
+    
+    usuario = autenticar_usuario(dados_formulario.username, dados_formulario.password,session)
+    
+    if not usuario:
+        raise HTTPException(status_code=400, detail="user ñ encontrado ou senha incorreta")
+    else:
+        #cria um token para o user
+        access_token = criar_token(usuario.id)
+
         return {
             'access_token':access_token,
             'token_type': "Bearer"
