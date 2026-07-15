@@ -21,6 +21,7 @@ def verificar_token(token: str = Depends(oauth2_schema),session = Depends(pegar_
     try:
         dic_info=jwt.decode(token,SECRET_KEY,ALG)
         id_usuario=dic_info.get("sub")
+        
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401,detail='Acesso negado(acess token n confirma)')
         
