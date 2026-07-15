@@ -1,8 +1,8 @@
 #aqui vamos fazer um banco de dados local para testar
 
+
 from sqlalchemy import create_engine,Column,String,Integer,Boolean,Float,ForeignKey  #ele que cria em si o bd
 from sqlalchemy.orm import declarative_base
-from sqlalchemy_utils.types import ChoiceType
 
 #so trocar o "" par ao db certo 
 db=create_engine("sqlite:///banco_De_dados.db") #cria coneção
