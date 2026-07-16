@@ -5,6 +5,9 @@ from dependecies import pegar_sessao,verificar_token
 
 from schemas import UsuarioSchema # importo meu modleo de parametro para o meu banco de dado
 from schemas import LoginSchema
+
+
+
 #parte da criptgrafia
 from main import bcrypt,ACCESS_TOKEN_EXPERIUS_MINUTES,ALG,SECRET_KEY
 
@@ -60,7 +63,8 @@ async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao))
         #raise para interromper a função com erro
         raise HTTPException(status_code=400, detail="ja existe um usuario com esse email")
     else:
-        
+        if user_Schema.admin==True:
+            raise HTTPException(status_code=400, detail="essa rota é para apenas user para admin:false")
         #aqui o bcrypt converte para bytes, criptografa, converte para texteo normal  e o gensalt ele cria um texteo aletaotio para cda senha em si 
         senha_criptgrafada=bcrypt.hashpw(user_Schema.senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8') #hash é para tranformar em codigo aleatorio minha string
         novo_usuario= user(user_Schema.nome,user_Schema.email,senha_criptgrafada,user_Schema.endereco,user_Schema.admin,user_Schema.admin)
@@ -68,7 +72,36 @@ async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao))
         session.commit() #comita tudo e encera a seção
         return {"mensagem": f"Usuario cadastrado com sucesso meu chapa, bem vindo {user_Schema.nome}"}
     
+
+@auth_router.post("/criar_conta_admin")                          #o user n passa esse parametro e sim ele puxa do Depends
+async def criar_conta_admin(user_Schema:UsuarioSchema,session = Depends(pegar_sessao), usuario:user = Depends(verificar_token)): #passa os parametos e o proprio fastapi vai verificar os tipos da variavel
     
+    #print(user_Schema.model_dump())
+    
+    Usuario= session.query(user).filter(user.email==user_Schema.email).first() #uma query para ver se tem um user do bd igual ao meu atual tentando inserir
+    
+    
+    if Usuario:
+        #raise para interromper a função com erro
+        raise HTTPException(status_code=400, detail="ja existe um usuario com esse email")
+    else:
+        #se o usuario n é admin da erro
+        if not usuario.admin :
+            raise HTTPException(status_code=401,detail='vc n tem autorização para criar conta admin')
+    
+    
+        #aqui o bcrypt converte para bytes, criptografa, converte para texteo normal  e o gensalt ele cria um texteo aletaotio para cda senha em si 
+        senha_criptgrafada=bcrypt.hashpw(user_Schema.senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8') #hash é para tranformar em codigo aleatorio minha string
+        novo_usuario= user(user_Schema.nome,user_Schema.email,senha_criptgrafada,user_Schema.endereco,user_Schema.admin,user_Schema.admin)
+        session.add(novo_usuario)
+        session.commit() #comita tudo e encera a seção
+        return {"mensagem": f"Usuario ADMIN cadastrado com sucesso {user_Schema.nome}"}
+    
+
+
+
+
+
 #login ->email e senha - > token JWT
 @auth_router.post("/login")
 async def login(login_schema:LoginSchema,session: Session = Depends(pegar_sessao)):
@@ -87,6 +120,7 @@ async def login(login_schema:LoginSchema,session: Session = Depends(pegar_sessao
             'token_type': "Bearer"
                 }
 
+
 #utilizar o token refresh, verifica a entrada token verificado e atualiza
 @auth_router.get("/refresh")
 async def use_refresh_token(usuario:user = Depends(verificar_token)):
@@ -96,6 +130,7 @@ async def use_refresh_token(usuario:user = Depends(verificar_token)):
             'access_token':access_token,
             'token_type': "Bearer"
             }
+    
     
     
 #--------------------------------------------------------------------------------------
