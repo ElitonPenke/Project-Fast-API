@@ -2,7 +2,7 @@
 
 
 from sqlalchemy import create_engine,Column,String,Integer,Boolean,Float,ForeignKey  #ele que cria em si o bd
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base,relationship
 
 #so trocar o "" par ao db certo 
 db=create_engine("sqlite:///banco_De_dados.db") #cria coneção
@@ -46,12 +46,25 @@ class pedido(base):
     status=Column("status",String)
     usuario=Column("usuario",ForeignKey(user.id))
     preco=Column("preco",Float)
-    
+    #conecta duas tabelas, n é um pendencia em si, pois ja tem o foreign key
+    itens=relationship("Itempedido",cascade="all,delete") #mais para calcular os valores do pedido com base nos itens que tem
+                                            #quando eu deletar um pedido, ele delete todos o tiens relacionados ao pedido
     def __init__(self,usuario,status="PENDENTE",preco=0):
         self.usuario=usuario
         self.status=status
         self.preco=preco
-    
+        
+    def calcular_preco(self):
+        #percorre todos os ites que tem no meu pedido
+        ''' preco_item=0
+        for item in self.item: #para cada item dentro dos itens
+            preco_item = item.preco_unit*item.quantidade #vai pegar o valor e multiplicar pela quantidade
+            preco_item+=preco_item #soma a ele mesmo e repete tudo de novo par aoutro item e assim por adiante
+        '''
+        
+        #soma o preco de todos os item e coloca no pedido
+        self.preco=sum(item.preco_unit*item.quantidade for item in self.itens)
+        
 #itens_do_pedido
 class Itempedido(base):
     __tablename__="itens_pedidos"
@@ -69,3 +82,7 @@ class Itempedido(base):
         self.tamanho=tamanho
         self.preco_unit=preco_unit
         self.pedido=pedido
+
+
+#criar a migração do banco de dados : alembic revision --autogenerate -m "..."
+#executar a migração: alembic upgrade head

@@ -3,6 +3,7 @@
 #deactivate
 #liga o servidor FastAPI uvicorn main:app --reload
 
+
 import bcrypt #criptografar as senhas
 from fastapi import FastAPI
 from dotenv import load_dotenv

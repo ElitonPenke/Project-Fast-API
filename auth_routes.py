@@ -52,7 +52,7 @@ async def home():
 
 #estou postando informações no meu bd
 @auth_router.post("/criar_conta")                          #o user n passa esse parametro e sim ele puxa do Depends
-async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao)): #passa os parametos e o proprio fastapi vai verificar os tipos da variavel
+async def criar_conta(user_Schema:UsuarioSchema,session:Session = Depends(pegar_sessao)): #passa os parametos e o proprio fastapi vai verificar os tipos da variavel
     
     #print(user_Schema.model_dump())
     
@@ -74,7 +74,7 @@ async def criar_conta(user_Schema:UsuarioSchema,session = Depends(pegar_sessao))
     
 
 @auth_router.post("/criar_conta_admin")                          #o user n passa esse parametro e sim ele puxa do Depends
-async def criar_conta_admin(user_Schema:UsuarioSchema,session = Depends(pegar_sessao), usuario:user = Depends(verificar_token)): #passa os parametos e o proprio fastapi vai verificar os tipos da variavel
+async def criar_conta_admin(user_Schema:UsuarioSchema,session:Session = Depends(pegar_sessao), usuario:user = Depends(verificar_token)): #passa os parametos e o proprio fastapi vai verificar os tipos da variavel
     
     #print(user_Schema.model_dump())
     
@@ -104,7 +104,7 @@ async def criar_conta_admin(user_Schema:UsuarioSchema,session = Depends(pegar_se
 
 #login ->email e senha - > token JWT
 @auth_router.post("/login")
-async def login(login_schema:LoginSchema,session: Session = Depends(pegar_sessao)):
+async def login(login_schema:LoginSchema,session:Session = Depends(pegar_sessao)):
     
     usuario = autenticar_usuario(login_schema.email, login_schema.senha,session)
     
