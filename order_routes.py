@@ -134,7 +134,67 @@ async def excluir_item_pedido(id_item_pedido:int, session: Session = Depends(peg
     session.commit()
     return{
         "mensagem":"item excluido com sucesso",
-        "preco_pedido":item_pedido.preco
+        "preco_pedido":item_pedido.preco_unit,
+        "pedido":Pedido_do_item,
+        "itens_do_pedido":Pedido_do_item.itens  
+
     }
     
+#finalizar um pedido
+@order_router.post("/pedidpo/finalizar_pedido/{id_pedido}") # 'id_pedido' é um parametro para a rota 
+async def finalizar_pedido (id_pedido: int,session:Session = Depends(pegar_sessao),usuario:user = Depends(verificar_token)) : # seu eu passei um parametro no rota, obrigatoriamente preciso passar na função
+    #vai executar na minha tabela pedido aonde esta filtrando que a coluna id seja igual ao meu id_pedido passado como parametro na função
+    Pedido=session.query(pedido).filter(pedido.id==id_pedido).first() #primeiro(boa pratica)
+    
+    if not Pedido:#se n exsite esse pedido
+        raise HTTPException(status_code=400, detail='pedido n encontrado !')
+    
+    
+    #se o usuario n é admin e também n é o dono do pedido, da erro
+    if not usuario.admin and usuario.id != Pedido.usuario:
+        raise HTTPException(status_code=401,detail='vc n tem autorização para finalizar esse pedido')
+    
+    
+    #se exsite o pedido ele vai ser cancelado
+    Pedido.status="FINALIZADO"
+    
+    #precisamdos apenas um commit, visto que n estamos adicionadno nada novo em si na secão, somente alteranod algo que ja exsite la dentro(db)
+    session.commit()
+    
+    #essa rota aqui por si so ja esta pronta, porem vou colocar uma mensagem dizerndo que deu certo
+    
+    return {    #ao eu carregar o id do pedido que teoricamente ja foi fechado antes no commit, eu forço o software carregar toda a minha isntancia do pedido, assim ele tras td novamente assim posibilitando trazer o pedido:{}
+        "mensagem":f' Deu certo a finalizar do pedido {Pedido.id}',
+        "pedido":Pedido # um resumo do pedido cancelado
+    }
+    
+    #visualizar 1 pedido em si
+    
+@order_router.get("/pedido/{id_pedido}")
+async def visualizar_pedido (id_pedido: int,session:Session = Depends(pegar_sessao),usuario:user = Depends(verificar_token)):
+    Pedido=session.query(pedido).filter(pedido.id==id_pedido).first() #primeiro(boa pratica)
+    
+    if not Pedido:#se n exsite esse pedido
+        raise HTTPException(status_code=400, detail='pedido n encontrado !')
+    
+    
+    #se o usuario n é admin e também n é o dono do pedido, da erro
+    if not usuario.admin and usuario.id != Pedido.usuario:
+        raise HTTPException(status_code=401,detail='vc n tem autorização para visualizar esse pedido')
+    
+    return {
+        'quantidade_iten_pedido': len(Pedido.itens),
+        'pedido':Pedido
+    }
+    
+    
 
+#listar todos os meus pedidos
+@order_router.get('/listar/pedidos_usuario')
+async def listar_pedidos_usuario(session:Session = Depends(pegar_sessao),usuario:user = Depends(verificar_token)):
+                                                    
+        todos_pedidos= session.query(pedido).filter(pedido.usuario==usuario.id).all()
+        return {
+            'pedidos':todos_pedidos
+        }
+        

@@ -3,6 +3,10 @@
 from pydantic import BaseModel
 from typing import Optional
 
+
+
+
+#PADRÕES DE INSERVAÇÃO DE DADOS ---------------------------------------
 #essa classe vai me dizer o que eu preciso passar exatamente o formato do novo user
 class UsuarioSchema(BaseModel):
     nome:str
