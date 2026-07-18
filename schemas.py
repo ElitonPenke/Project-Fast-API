@@ -1,7 +1,7 @@
 #no python em si n é preciso fixar o tipo de dados, porem é melhor dizer para melhor a velocidade e integridade
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 
 
@@ -43,6 +43,17 @@ class ItemPedidoSchema(BaseModel):
     sabor:str
     tamanho:str
     preco_unit:float
+    
+    class Config:
+        from_attributes=True
+
+
+#PADRÕES DE RESPOSTA DE DADOS ---------------------------------------
+class ResponseSchema(BaseModel):
+    id:int
+    status:str
+    preco:float
+    items:List[ItemPedidoSchema] #vou dar uma lista de item pedidos
     
     class Config:
         from_attributes=True

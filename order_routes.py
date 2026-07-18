@@ -1,9 +1,9 @@
 from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy.orm import Session
 from dependecies import pegar_sessao,verificar_token
-from schemas import PedidoSchema,ItemPedidoSchema #meus 'modelos' de como os dados devem ser
+from schemas import PedidoSchema,ItemPedidoSchema, ResponseSchema #meus 'modelos' de como os dados devem ser
 from models import pedido, user, Itempedido #as instancias, colunas,tabelas, do meu banco de dados em si
-
+from typing import List #para importar uma lsit utlizando uma modelo de schema do responsi model
 #eu posso passar o parametro de um usuario estar logado em cada uma das minhas rotas, ou simplesmente colocar essa restriçao diretamente no meu router
 
 order_router = APIRouter(prefix="/pedidos", tags=['roteador_edidos'], dependencies=[Depends(verificar_token)]) #definindo que todas as rotas aqui vai ficar dentro de order
@@ -190,11 +190,8 @@ async def visualizar_pedido (id_pedido: int,session:Session = Depends(pegar_sess
     
 
 #listar todos os meus pedidos
-@order_router.get('/listar/pedidos_usuario')
+@order_router.get('/listar/pedidos_usuario',response_model=list[ResponseSchema])
 async def listar_pedidos_usuario(session:Session = Depends(pegar_sessao),usuario:user = Depends(verificar_token)):
                                                     
         todos_pedidos= session.query(pedido).filter(pedido.usuario==usuario.id).all()
-        return {
-            'pedidos':todos_pedidos
-        }
-        
+        return todos_pedidos
